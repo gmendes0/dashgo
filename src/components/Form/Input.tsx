@@ -17,7 +17,7 @@ export default function Input({
 }: InputProps): JSX.Element {
   return (
     <FormControl>
-      {!!label && <FormLabel htmlFor={name}>{name}</FormLabel>}
+      {!!label && <FormLabel htmlFor={name}>{label}</FormLabel>}
       <ChakraInput
         id={name}
         name={name}

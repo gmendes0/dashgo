@@ -80,7 +80,7 @@ const Dashboard: NextPage = () => {
             minChildWidth="320px" // quebra automáticamente abaixo de 320px de tela
             // align="flex-start"
           >
-            <Box p={8} bg="gray.800" borderRadius={8} pb={4}>
+            <Box p={{ base: 6, md: 8 }} bg="gray.800" borderRadius={8} pb={4}>
               <Text fontSize="lg" mb={4}>
                 Inscritos da semana
               </Text>

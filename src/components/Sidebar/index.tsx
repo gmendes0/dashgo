@@ -1,69 +1,39 @@
-import { Box, Icon, Link, Stack, Text } from "@chakra-ui/react";
 import {
-  RiDashboardLine,
-  RiContactsLine,
-  RiInputMethodLine,
-  RiGitMergeLine,
-} from "react-icons/ri";
+  Box,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
+  useBreakpointValue,
+} from "@chakra-ui/react";
+import { useSidebarDrawer } from "../../contexts/SidebarDrawerContext";
+import SidbarNav from "./SidebarNav";
 
 function Sidebar(): JSX.Element {
+  const isDrawerSidebar = useBreakpointValue({ base: true, lg: false });
+  const { isOpen, onClose } = useSidebarDrawer();
+
+  if (isDrawerSidebar)
+    return (
+      <Drawer isOpen={isOpen} onClose={onClose} placement="left">
+        <DrawerOverlay />
+        <DrawerContent bg="gray.800" p={4}>
+          <DrawerCloseButton mt={6} fontSize={16} />
+          <DrawerHeader>Navegação</DrawerHeader>
+
+          <DrawerBody>
+            <SidbarNav />
+          </DrawerBody>
+        </DrawerContent>
+        {/* </DrawerOverlay> */}
+      </Drawer>
+    );
+
   return (
     <Box as="aside" w={64} mr={8}>
-      <Stack spacing={12} align="flex-start">
-        <Box>
-          <Text
-            fontWeight="bold"
-            color="gray.400"
-            fontSize="small"
-            textTransform="uppercase"
-          >
-            Geral
-          </Text>
-
-          <Stack spacing={4} mt={8} align="stretch">
-            <Link display="flex" alignItems="center">
-              <Icon as={RiDashboardLine} fontSize={20} />
-              <Text ml={4} fontWeight="medium">
-                Dashboard
-              </Text>
-            </Link>
-
-            <Link display="flex" alignItems="center">
-              <Icon as={RiContactsLine} fontSize={20} />
-              <Text ml={4} fontWeight="medium">
-                Usuarios
-              </Text>
-            </Link>
-          </Stack>
-        </Box>
-
-        <Box>
-          <Text
-            fontWeight="bold"
-            color="gray.400"
-            fontSize="small"
-            textTransform="uppercase"
-          >
-            Automação
-          </Text>
-
-          <Stack spacing={4} mt={8} align="stretch">
-            <Link display="flex" alignItems="center">
-              <Icon as={RiInputMethodLine} fontSize={20} />
-              <Text ml={4} fontWeight="medium">
-                Formulários
-              </Text>
-            </Link>
-
-            <Link display="flex" alignItems="center">
-              <Icon as={RiGitMergeLine} fontSize={20} />
-              <Text ml={4} fontWeight="medium">
-                Automação
-              </Text>
-            </Link>
-          </Stack>
-        </Box>
-      </Stack>
+      <SidbarNav />
     </Box>
   );
 }
