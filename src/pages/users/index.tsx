@@ -20,6 +20,7 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import Pagination from "../../components/Pagination";
+import Link from "next/link";
 
 const Users: NextPage = () => {
   const isWideScreen = useBreakpointValue({ base: false, lg: true });
@@ -42,16 +43,18 @@ const Users: NextPage = () => {
                 Usuários
               </Heading>
 
-              <Button
-                as="a"
-                size="sm"
-                fontSize="small"
-                colorScheme="pink"
-                leftIcon={<Icon as={RiAddLine} fontSize={20} />}
-                cursor="pointer"
-              >
-                Criar novo
-              </Button>
+              <Link href="/users/create" passHref>
+                <Button
+                  as="a"
+                  size="sm"
+                  fontSize="small"
+                  colorScheme="pink"
+                  leftIcon={<Icon as={RiAddLine} fontSize={20} />}
+                  cursor="pointer"
+                >
+                  Criar novo
+                </Button>
+              </Link>
             </Flex>
 
             <Table colorScheme="whiteAlpha">
