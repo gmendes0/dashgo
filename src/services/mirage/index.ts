@@ -1,4 +1,4 @@
-import { createServer, Factory, Model } from "miragejs";
+import { createServer, Factory, Model, Response } from "miragejs";
 import { faker } from "@faker-js/faker";
 
 interface User {
@@ -30,7 +30,7 @@ export function makeServer() {
     },
 
     seeds(server) {
-      server.createList("user", 10);
+      server.createList("user", 200);
     },
 
     routes() {
@@ -40,7 +40,25 @@ export function makeServer() {
       // Delay para a resposta. Útil para testar loadings
       this.timing = 750;
 
-      this.get("/users");
+      this.get("/users", function (this: any, schema, request) {
+        const { page = 2, per_page = 10 } = request.params;
+
+        const total: Number = schema.all("user").length;
+        const start = (Number(page) - 1) * Number(per_page);
+        const end = start + Number(per_page);
+
+        const users = this.serialize(schema.all("user")).users.slice(
+          start,
+          end
+        );
+
+        // console.log("page: ", users.length);
+
+        return new Response(200, { "X-TOTAL-COUNT": String(total) }, { users });
+      });
+
+      // this.get("/users");
+
       this.post("/users");
 
       // Reseta o namespace para nao conflitar com /api do nextjs

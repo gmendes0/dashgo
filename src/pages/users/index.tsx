@@ -4,7 +4,9 @@ import {
   Checkbox,
   Flex,
   Heading,
+  HStack,
   Icon,
+  IconButton,
   Spinner,
   Table,
   Tbody,
@@ -15,72 +17,26 @@ import {
   Tr,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
-import { useQuery } from "react-query";
 import { NextPage } from "next";
 import Head from "next/head";
 
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
-import { RiAddLine, RiPencilLine } from "react-icons/ri";
+import { RiAddLine, RiPencilLine, RiRefreshLine } from "react-icons/ri";
 import Pagination from "../../components/Pagination";
 import Link from "next/link";
-import { format } from "../../utils/format";
-
-type TUser = {
-  id: number;
-  name: string;
-  email: string;
-  created_at: string;
-};
-
-type TUsersResponseData = {
-  users: Array<TUser>;
-};
-
-type TQueryData = {
-  id: number;
-  name: string;
-  email: string;
-  createdAt: string;
-};
+import { useUsers } from "../../hooks/useUsers";
 
 const Users: NextPage = () => {
   // Stale While Revalidate
   // Mostra uma versao obsoleta dos dados enquanto tenta revalidar, buscando novamente na api
   // Também trabalha com revalidate on focus, que revalida os dados ao usuário focar na page novamente
   // 1 param do useQuery é a chave para armazenar em cache
-  const { data, isLoading, error } = useQuery<TQueryData[]>(
-    "users",
-    async () => {
-      const response = await fetch("http://localhost:3000/api/users");
-      const data: TUsersResponseData = await response.json();
-
-      const users = data.users.map((user) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        createdAt: format.date(new Date(user.created_at)),
-      }));
-
-      return users;
-    },
-    {
-      staleTime: 1000 * 10, // 5 segundos
-    }
-  );
+  // isFatching tbm é chamado quando ainda nao tem dados em cache
+  // isRefetching só é true quando isLoading é false e isFatching é true
+  const { data, isLoading, isRefetching, refetch, error } = useUsers();
 
   const isWideScreen = useBreakpointValue({ base: false, lg: true });
-
-  // useEffect(() => {
-  //   fetch("http://localhost:3000/api/users")
-  //     .then((response) => {
-  //       return response.json();
-  //     })
-  //     .then((data) => {
-  //       console.log(data);
-  //     });
-  // }, []);
 
   return (
     <>
@@ -94,24 +50,35 @@ const Users: NextPage = () => {
         <Flex w="100%" my={6} maxW={1480} mx="auto" px={6}>
           <Sidebar />
 
-          <Box flex={1} borderRadius={8} bg="gray.800" p={8}>
+          <Box flex={1} borderRadius={8} bg="gray.800" p={8} maxW="100%" mb={8}>
             <Flex mb={8} justify="space-between" align="center">
-              <Heading size="lg" fontWeight="notmal">
+              <Heading size="lg" fontWeight="normal">
                 Usuários
+                {isRefetching && <Spinner size="sm" ml={4} color="gray.500" />}
               </Heading>
 
-              <Link href="/users/create" passHref>
-                <Button
-                  as="a"
+              <HStack spacing={2}>
+                <IconButton
+                  aria-label="refresh list"
                   size="sm"
-                  fontSize="small"
-                  colorScheme="pink"
-                  leftIcon={<Icon as={RiAddLine} fontSize={20} />}
-                  cursor="pointer"
-                >
-                  Criar novo
-                </Button>
-              </Link>
+                  fontSize="lg"
+                  colorScheme="purple"
+                  icon={<RiRefreshLine />}
+                  onClick={() => refetch()}
+                />
+                <Link href="/users/create" passHref>
+                  <Button
+                    as="a"
+                    size="sm"
+                    fontSize="small"
+                    colorScheme="pink"
+                    leftIcon={<Icon as={RiAddLine} fontSize={20} />}
+                    cursor="pointer"
+                  >
+                    Criar novo
+                  </Button>
+                </Link>
+              </HStack>
             </Flex>
 
             {isLoading ? (
@@ -172,7 +139,13 @@ const Users: NextPage = () => {
                   </Tbody>
                 </Table>
 
-                <Pagination />
+                <Pagination
+                  totalOfRegisters={200}
+                  currentPage={10}
+                  perPage={10}
+                  siblingsCount={2}
+                  onPageChange={(n: number) => {}}
+                />
               </>
             )}
           </Box>
