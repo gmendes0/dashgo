@@ -12,11 +12,15 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useMutation } from "react-query";
 import * as yup from "yup";
 import Input from "../../components/Form/Input";
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
+import { api } from "../../services/api";
+import { queryClient } from "../../services/queryClient";
 
 type TCreateUserFormData = {
   name: string;
@@ -39,17 +43,42 @@ const CreateUserFormSchema = yup.object({
 });
 
 const CreateUser: NextPage = () => {
+  const router = useRouter();
+
+  const { mutateAsync } = useMutation(
+    async (user: TCreateUserFormData) => {
+      const response = await api.post("/users", {
+        user: {
+          ...user,
+          created_at: new Date(),
+        },
+      });
+
+      return response.data.user;
+    },
+    {
+      onSuccess: () => {
+        // Invalida o cache depois de cadastrar um novo user
+        // É possivel tbm invalidar somente uma pagina: invalidateQueries(["users", {page: 1}])
+        queryClient.invalidateQueries("users");
+      },
+    }
+  );
+
   const { register, handleSubmit, formState } = useForm<TCreateUserFormData>({
     resolver: yupResolver(CreateUserFormSchema),
   });
 
   const handleCreate: SubmitHandler<TCreateUserFormData> = async (values) => {
-    console.log(values);
+    // console.log(values);
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await mutateAsync(values);
+
+    router.push("/users");
   };
 
-  console.log(formState.errors);
+  console.log(formState.errors); // todo: remover
 
   return (
     <>

@@ -16,6 +16,7 @@ import {
   Thead,
   Tr,
   useBreakpointValue,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
 import { NextPage } from "next";
 import Head from "next/head";
@@ -26,17 +27,43 @@ import { RiAddLine, RiPencilLine, RiRefreshLine } from "react-icons/ri";
 import Pagination from "../../components/Pagination";
 import Link from "next/link";
 import { useUsers } from "../../hooks/useUsers";
+import { useState } from "react";
+import { queryClient } from "../../services/queryClient";
+import { api } from "../../services/api";
+
+type TUserData = {
+  id: string;
+  name: string;
+  email: string;
+  created_at: string;
+};
 
 const Users: NextPage = () => {
+  const [page, setPage] = useState<number>(1);
+
   // Stale While Revalidate
   // Mostra uma versao obsoleta dos dados enquanto tenta revalidar, buscando novamente na api
   // Também trabalha com revalidate on focus, que revalida os dados ao usuário focar na page novamente
   // 1 param do useQuery é a chave para armazenar em cache
   // isFatching tbm é chamado quando ainda nao tem dados em cache
   // isRefetching só é true quando isLoading é false e isFatching é true
-  const { data, isLoading, isRefetching, refetch, error } = useUsers();
+  const { data, isLoading, isRefetching, refetch, error } = useUsers({ page });
 
   const isWideScreen = useBreakpointValue({ base: false, lg: true });
+
+  async function handlePrefetchUser(userID: string): Promise<void> {
+    await queryClient.prefetchQuery(
+      ["user", { id: userID }],
+      async () => {
+        const response = await api.get<TUserData>(`/users/${userID}`);
+
+        return response.data;
+      },
+      {
+        staleTime: 1000 * 60 * 10, // 10 min
+      }
+    );
+  }
 
   return (
     <>
@@ -104,14 +131,19 @@ const Users: NextPage = () => {
                   </Thead>
 
                   <Tbody>
-                    {data?.map((user) => (
+                    {data?.users.map((user) => (
                       <Tr key={user.id}>
                         <Td px={{ base: 4, md: 4, lg: 6 }}>
                           <Checkbox colorScheme="pink" />
                         </Td>
                         <Td>
                           <Box>
-                            <Text fontWeight="bold">{user.name}</Text>
+                            <ChakraLink
+                              color="purple.400"
+                              onMouseEnter={() => handlePrefetchUser(user.id)}
+                            >
+                              <Text fontWeight="bold">{user.name}</Text>
+                            </ChakraLink>
                             <Text fontSize="small" color="gray.300">
                               {user.email}
                             </Text>
@@ -140,11 +172,10 @@ const Users: NextPage = () => {
                 </Table>
 
                 <Pagination
-                  totalOfRegisters={200}
-                  currentPage={10}
-                  perPage={10}
+                  totalOfRegisters={data?.total ?? 0}
+                  currentPage={page}
                   siblingsCount={2}
-                  onPageChange={(n: number) => {}}
+                  onPageChange={setPage}
                 />
               </>
             )}

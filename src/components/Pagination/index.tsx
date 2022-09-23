@@ -70,7 +70,7 @@ function Pagination({
       <HStack spacing={2}>
         {currentPage > siblingsCount + 1 && (
           <>
-            <PaginationItem number={1} />
+            <PaginationItem number={1} onPageChange={onPageChange} />
             <Text color="gray.300" w={8} textAlign="center">
               ...
             </Text>
@@ -78,13 +78,25 @@ function Pagination({
         )}
 
         {previousPages.map((page) => (
-          <PaginationItem key={page} number={page} />
+          <PaginationItem
+            key={page}
+            number={page}
+            onPageChange={onPageChange}
+          />
         ))}
 
-        <PaginationItem number={currentPage} isCurrent />
+        <PaginationItem
+          number={currentPage}
+          onPageChange={onPageChange}
+          isCurrent
+        />
 
         {nextPages.map((page) => (
-          <PaginationItem key={page} number={page} />
+          <PaginationItem
+            key={page}
+            number={page}
+            onPageChange={onPageChange}
+          />
         ))}
 
         {currentPage + siblingsCount < lastPage && (
@@ -92,7 +104,7 @@ function Pagination({
             <Text color="gray.300" w={8} textAlign="center">
               ...
             </Text>
-            <PaginationItem number={lastPage} />
+            <PaginationItem number={lastPage} onPageChange={onPageChange} />
           </>
         )}
       </HStack>
