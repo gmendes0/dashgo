@@ -1,10 +1,16 @@
 import { Box, Flex, SimpleGrid, Text, theme } from "@chakra-ui/react";
-import { NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import dynamic from "next/dynamic";
 import { ApexOptions } from "apexcharts";
+import { useAuth } from "../hooks/useAuth";
+import { useEffect } from "react";
+import { authApi } from "../services/authApi";
+import { parseCookies } from "nookies";
+import { withSSRAuth } from "../utils/withSSRAuth";
+import { setupApi } from "../services/setupApi";
 
 const Chart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
@@ -61,6 +67,16 @@ const options: ApexOptions = {
 const series = [{ name: "series-1", data: [31, 120, 10, 28, 51, 18, 109] }];
 
 const Dashboard: NextPage = () => {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    console.log("Dashboard.useEffect");
+
+    authApi.get("/me").then((response) => {
+      console.log(response);
+    });
+  }, []);
+
   return (
     <>
       <Head>
@@ -124,3 +140,13 @@ const Dashboard: NextPage = () => {
 };
 
 export default Dashboard;
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+  const api = setupApi(ctx);
+
+  const response = await api.get("/me");
+
+  return {
+    props: {},
+  };
+});

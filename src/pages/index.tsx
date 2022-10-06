@@ -1,10 +1,13 @@
 import { Button, Flex, Stack } from "@chakra-ui/react";
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Input from "../components/Form/Input";
+import { useAuth } from "../hooks/useAuth";
+import { parseCookies } from "nookies";
+import { withSSRGuest } from "../utils/withSSRGuest";
 
 type SignInFormData = {
   email: string;
@@ -17,14 +20,16 @@ const signInFormSchema = yup.object({
 });
 
 const SignIn: NextPage = () => {
+  const { signIn } = useAuth();
+
   const { register, handleSubmit, formState } = useForm<SignInFormData>({
     resolver: yupResolver(signInFormSchema),
   });
 
-  console.log(formState.errors);
-
   const handleSignIn: SubmitHandler<SignInFormData> = async (values) => {
-    console.log(values);
+    const { email, password } = values;
+
+    await signIn({ email, password });
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
   };
@@ -77,3 +82,9 @@ const SignIn: NextPage = () => {
 };
 
 export default SignIn;
+
+export const getServerSideProps: GetServerSideProps = withSSRGuest(async () => {
+  return {
+    props: {},
+  };
+});
